@@ -1,16 +1,8 @@
 version: "3.8"
 
 services: 
-  load-balancer:
-    image: nginx:alpine
-    ports: 
-      - "9000:8080"
-    volumes: 
-      - "../nginx/lb.conf:/etc/nginx/conf.d/default.conf"
-    networks: 
-      - demo-spring-boot-atomix
   member-1:
-    build: "../Dockerfile"
+    build: "../."
     image: demo-spring-boot-atomix:1.0
     container_name: member-1
     environment: 
@@ -20,11 +12,61 @@ services:
       - "demo-spring-boot-atomix-member-1:/app/cluster-storage"
     networks: 
       - demo-spring-boot-atomix
-    depends_on: 
-      - load-balancer
+  member-2:
+    image: demo-spring-boot-atomix:1.0
+    container_name: member-2
+    environment: 
+      SERVER_PORT: 8080
+    volumes: 
+      - "./config/application-member-2.yaml:/app/application.yaml"
+      - "demo-spring-boot-atomix-member-2:/app/cluster-storage"
+    networks: 
+      - demo-spring-boot-atomix
+    depends_on:
+      - member-1
+  member-3:
+    image: demo-spring-boot-atomix:1.0
+    container_name: member-3
+    environment: 
+      SERVER_PORT: 8080
+    volumes: 
+      - "./config/application-member-3.yaml:/app/application.yaml"
+      - "demo-spring-boot-atomix-member-3:/app/cluster-storage"
+    networks: 
+      - demo-spring-boot-atomix
+    depends_on:
+      - member-1
+  member-4:
+    image: demo-spring-boot-atomix:1.0
+    container_name: member-4
+    environment: 
+      SERVER_PORT: 8080
+    volumes: 
+      - "./config/application-member-4.yaml:/app/application.yaml"
+      - "demo-spring-boot-atomix-member-4:/app/cluster-storage"
+    networks: 
+      - demo-spring-boot-atomix
+    depends_on:
+      - member-1
+  load-balancer:
+    image: nginx:alpine
+    ports: 
+      - "10000:8080"
+    volumes: 
+      - "../nginx/lb.conf:/etc/nginx/conf.d/default.conf"
+    networks: 
+      - demo-spring-boot-atomix
+    depends_on:
+      - member-1
+      - member-2
+      - member-3
+      - member-4
 
 volumes: 
   demo-spring-boot-atomix-member-1:
+  demo-spring-boot-atomix-member-2:
+  demo-spring-boot-atomix-member-3:
+  demo-spring-boot-atomix-member-4:
 
 networks:
   demo-spring-boot-atomix:

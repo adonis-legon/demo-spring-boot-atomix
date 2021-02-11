@@ -1,9 +1,9 @@
 app:
   cluster:
     node:
-      name: member-1
-      host: member-1
-      port: 10001
+      name: member-4
+      host: member-4
+      port: 10004
     members:
       - name: member-1
         host: member-1
