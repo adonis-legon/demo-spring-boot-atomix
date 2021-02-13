@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import io.atomix.cluster.Node;
 import io.atomix.cluster.discovery.BootstrapDiscoveryProvider;
 import io.atomix.core.Atomix;
-import io.atomix.core.profile.Profile;
 import io.atomix.protocols.raft.partition.RaftPartitionGroup;
 import io.atomix.storage.StorageLevel;
 
@@ -39,25 +38,16 @@ public class SequenceClusterServer {
             nodes.add(Node.builder().withId(member.getName()).withAddress(member.getHost(), member.getPort()).build());
         });
 
-        atomix = Atomix.builder()
-        .withMemberId(sequenceClusterConfig.getNode().getName())
-        .withAddress(sequenceClusterConfig.getNode().getHost(), sequenceClusterConfig.getNode().getPort())
-        .withMembershipProvider(BootstrapDiscoveryProvider.builder().withNodes(nodes).build())
-        .withManagementGroup(
-            RaftPartitionGroup.builder("system")
-            .withMembers(members)
-            .withNumPartitions(1)
-            .withStorageLevel(StorageLevel.DISK)
-            .withDataDirectory(new File(sequenceClusterConfig.getStoragePath(), "system"))
-            .build())
-        .withPartitionGroups(
-            RaftPartitionGroup.builder("data")
-            .withMembers(members)
-            .withNumPartitions(10)
-            .withStorageLevel(StorageLevel.DISK)
-            .withDataDirectory(new File(sequenceClusterConfig.getStoragePath(), "data"))
-            .build())
-        .build();
+        atomix = Atomix.builder().withMemberId(sequenceClusterConfig.getNode().getName())
+                .withAddress(sequenceClusterConfig.getNode().getHost(), sequenceClusterConfig.getNode().getPort())
+                .withMembershipProvider(BootstrapDiscoveryProvider.builder().withNodes(nodes).build())
+                .withManagementGroup(RaftPartitionGroup.builder("system").withMembers(members).withNumPartitions(1)
+                        .withStorageLevel(StorageLevel.DISK)
+                        .withDataDirectory(new File(sequenceClusterConfig.getStoragePath(), "system")).build())
+                .withPartitionGroups(RaftPartitionGroup.builder("data").withMembers(members).withNumPartitions(10)
+                        .withStorageLevel(StorageLevel.DISK)
+                        .withDataDirectory(new File(sequenceClusterConfig.getStoragePath(), "data")).build())
+                .build();
 
         atomix.start().join();
     }
